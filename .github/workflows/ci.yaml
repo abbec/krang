@@ -1,0 +1,26 @@
+name: Checks
+
+on:
+  push:
+
+jobs:
+
+  build-format-tests:
+    name: "Build krang!"
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Install Nix
+      uses: cachix/install-nix-action@v12
+
+    - name: Create Nix configuration
+      run: |
+        mkdir -p ~/.config/nix
+        cp .github/workflows/nix.conf ~/.config/nix/nix.conf
+
+    - name: Build Krang 🧠
+      run: |
+        nix build -L
