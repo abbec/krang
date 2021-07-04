@@ -13,7 +13,7 @@ impl Lexer {
     }
 
     pub async fn run(&self, _content: &str) -> Vec<Token> {
-        vec![ Token::LeftParen, Token::RightParen ]
+        vec![Token::LeftParen, Token::RightParen]
     }
 }
 

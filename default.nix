@@ -13,9 +13,11 @@ let
         config = { };
       };
 
-  rustBin = (nixpkgs.rust-bin.stable."1.50.0".rust.override {
+  rustBin = (nixpkgs.rust-bin.stable."1.53.0".default.override {
     targets = [ "wasm32-wasi" ];
   });
+
+  rustAnalyzer = nixpkgs.rust-bin.nightly."2021-06-29".rust-analyzer-preview;
 
   # rust-analyzer cannot handle symlinks
   # so we need to create a derivation with the
@@ -38,11 +40,7 @@ let
   commonAttrs = {
     name = "krang";
     src = nixpkgs.nix-gitignore.gitignoreSource [] ./.;
-    nativeBuildInputs = [ rustBin nixpkgs.cacert ];
-    buildInputs =
-      # this is needed since https://github.com/rust-lang/libc/commit/3e4d684dcdd1dff363a45c70c914204013810155
-      # on macos
-      nixpkgs.stdenv.lib.optional nixpkgs.stdenv.hostPlatform.isDarwin nixpkgs.libiconv;
+    nativeBuildInputs = [ rustBin nixpkgs.cacert ] ++ nixpkgs.lib.optional nixpkgs.lib.inNixShell rustAnalyzer;
 
     configurePhase = ''
       export CARGO_HOME=$PWD
@@ -55,6 +53,7 @@ let
     checkPhase = ''
       cargo fmt -- --check
       cargo clippy
+      echo $CARGO_TARGET_WASM32_WASI_RUNNER
       cargo test
     '';
 
@@ -70,7 +69,9 @@ let
     '';
 
     RUSTFLAGS = "-D warnings";
-    CARGO_TARGET_WASM32_WASI_RUNNER = "${nixpkgs.wasmtime}/bin/wasmtime";
+    CARGO_TARGET_WASM32_WASI_RUNNER = ''
+      ${nixpkgs.wasmtime}/bin/wasmtime run --disable-cache
+    '';
   };
 in
 {
