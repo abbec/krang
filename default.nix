@@ -53,7 +53,6 @@ let
     checkPhase = ''
       cargo fmt -- --check
       cargo clippy
-      echo $CARGO_TARGET_WASM32_WASI_RUNNER
       cargo test
     '';
 
